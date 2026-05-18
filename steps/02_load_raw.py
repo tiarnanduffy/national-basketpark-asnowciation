@@ -21,6 +21,9 @@ def add_load_metadata(df: pd.DataFrame, source_endpoint: str) -> pd.DataFrame:
 def write_raw_table(session: Session, df: pd.DataFrame, table_name: str):
     session.use_schema("RAW_NBA")
 
+    df = df.copy()
+    df.columns = [col.upper() for col in df.columns]
+
     session.write_pandas(
         df=df,
         table_name=table_name,
