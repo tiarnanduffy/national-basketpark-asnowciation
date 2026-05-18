@@ -9,10 +9,9 @@ from snowflake.snowpark import Session
 SEASON = "2015-16"
 
 
-# Metadata helper function. Adds season, endpoint, and current time to current table
-def add_load_metadata(df: pd.DataFrame, source_endpoint: str, season: str | None = SEASON) -> pd.DataFrame:
+# Metadata helper function. Adds endpoint, and current time to current table
+def add_load_metadata(df: pd.DataFrame, source_endpoint: str) -> pd.DataFrame:
     df = df.copy()
-    df["SEASON"] = season
     df["SOURCE_ENDPOINT"] = source_endpoint
     df["EXTRACTED_AT"] = datetime.now(timezone.utc)
     return df
@@ -35,14 +34,14 @@ def write_raw_table(session: Session, df: pd.DataFrame, table_name: str):
 # write to snowflake
 def load_teams(session: Session):
     df = pd.DataFrame(teams.get_teams())
-    df = add_load_metadata(df, source_endpoint="nba_api.stats.static.teams", season=None)
+    df = add_load_metadata(df, source_endpoint="nba_api.stats.static.teams")
     write_raw_table(session, df, "TEAMS")
 
 
 # Gets every player ever. Just like a static directory
 def load_players(session: Session):
     df = pd.DataFrame(players.get_players())
-    df = add_load_metadata(df, source_endpoint="nba_api.stats.static.players", season=None)
+    df = add_load_metadata(df, source_endpoint="nba_api.stats.static.players")
     write_raw_table(session, df, "PLAYERS")
 
 
@@ -68,7 +67,7 @@ def load_player_box_scores(session: Session):
     all_player_stats = []
 
     for game_id in game_ids:
-        print(f"LoadinSELECT * FROM GAMES WHERE GAME_ID = 0021500545;g box score for game {game_id}")
+        print(f"Loading box score for game {game_id}")
 
         endpoint = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=game_id)
         player_stats = endpoint.get_data_frames()[0]
